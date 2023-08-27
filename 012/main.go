@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -11,7 +10,7 @@ func main() {
 	dir := os.Args[1]
 	totalSize := int64(0)
 
-	files, _ := ioutil.ReadDir(dir)
+	files, _ := os.ReadDir(dir)
 	for _, file := range files {
 		if !file.IsDir() {
 			filePath := filepath.Join(dir, file.Name())
