@@ -4,22 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
-type FileInfo struct {
-	Path      string
-	Extension string
-}
+func main() {
+	targetDir := os.Args[1]
 
-type FileLister interface {
-	ListFiles(dir string) ([]FileInfo, error)
-}
-
-type LocalFileLister struct{}
-
-func (l LocalFileLister) ListFiles(dir string) ([]FileInfo, error) {
-	var fileInfos []FileInfo
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	cnt := make(map[string]int)
+	filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -28,33 +20,21 @@ func (l LocalFileLister) ListFiles(dir string) ([]FileInfo, error) {
 			if ext == "" {
 				ext = "other"
 			}
-			fileInfos = append(fileInfos, FileInfo{
-				Path:      path,
-				Extension: ext,
-			})
+			cnt[ext]++
 		}
 		return nil
 	})
 
-	return fileInfos, err
-}
-
-func main() {
-	targetDir := os.Args[1]
-
-	lister := LocalFileLister{}
-	fileInfos, err := lister.ListFiles(targetDir)
-	if err != nil {
-		fmt.Println("Error listing files:", err)
-		return
+	// sort by counts
+	keys := make([]string, 0, len(cnt))
+	for k := range cnt {
+		keys = append(keys, k)
 	}
+	sort.SliceStable(keys, func(i, j int) bool {
+		return cnt[keys[i]] > cnt[keys[j]]
+	})
 
-	extensionCount := make(map[string]int)
-	for _, fileInfo := range fileInfos {
-		extensionCount[fileInfo.Extension]++
-	}
-
-	for ext, count := range extensionCount {
-		fmt.Printf("Extension: %s, Count: %d\n", ext, count)
+	for _, k := range keys {
+		fmt.Printf("Extension: %s, Count: %d\n", k, cnt[k])
 	}
 }
