@@ -2,25 +2,32 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os/exec"
 	"strings"
 )
 
 func main() {
-	processName := "docker"
 
-	cmd := exec.Command("ps", "aux")
-	output, err := cmd.Output()
-	if err != nil {
-		log.Fatal(err)
-	}
+	reader, writer := io.Pipe()
 
-	scanner := bufio.NewScanner(bytes.NewReader(output))
+	go func() {
+		cmd := exec.Command("ps", "aux")
+		cmd.Stdout = writer
+		err := cmd.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		cmd.Wait()
+		writer.Close()
+	}()
+
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
+		processName := " go "
 		if strings.Contains(line, processName) {
 			fmt.Println(line)
 		}
