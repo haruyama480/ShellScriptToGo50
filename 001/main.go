@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 func main() {
-	files, err := ioutil.ReadDir(".")
+	files, err := os.ReadDir(".")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -15,4 +15,8 @@ func main() {
 	for _, file := range files {
 		fmt.Println(file.Name())
 	}
+
+	// pwd
+	wd, _ := os.Getwd()
+	fmt.Println(wd)
 }
