@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -15,7 +14,7 @@ type FileInfo struct {
 func main() {
 	targetDir := os.Args[1]
 
-	files, err := ioutil.ReadDir(targetDir)
+	files, err := os.ReadDir(targetDir)
 	if err != nil {
 		fmt.Println("Error reading directory:", err)
 		return
@@ -23,9 +22,13 @@ func main() {
 
 	for _, file := range files {
 		if !file.IsDir() {
+			stat, err := file.Info()
+			if err != nil {
+				panic(err)
+			}
 			info := FileInfo{
-				Path: filepath.Join(targetDir, file.Name()),
-				Size: file.Size(),
+				Path: filepath.Join(targetDir, stat.Name()),
+				Size: stat.Size(),
 			}
 			fmt.Printf("File: %s, Size: %d bytes\n", info.Path, info.Size)
 		}
